@@ -3,6 +3,7 @@ package com.example.Decouverte_Spring_boot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+//TODO : PARLER DU DI dans l'IOC.
 /**
  * @SpringBootApplication :
  * Définition : annotation (qui contient des métadonnées qu'on place sur une classe) qui regroupe
@@ -74,6 +75,7 @@ public class DecouverteSpringBootApplication {
 
 /** Exemple d'annotation permettant d'instancier des éléments dans le contexte de spring :
  *
+ * @Entity
  * @Service
  * @Repository
  * @RestController
