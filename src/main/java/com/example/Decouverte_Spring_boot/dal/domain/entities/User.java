@@ -1,10 +1,7 @@
 package com.example.Decouverte_Spring_boot.dal.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Getter
@@ -18,4 +15,26 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name="nom")
+    private String nom;
+
+    @Column(name="email")
+    private String email;
+
+    @Column(name="age")
+    private Integer age;
+
+    /**
+     * Le constructeur vide est le constructeur par défaut REQUIS par JPA.
+     */
+    public User() {}
+
+    /**
+     * Notre constructeur pratique
+     */
+    public User(String nom, String email, Integer age) {
+        this.nom = nom;
+        this.email = email;
+        this.age = age;
+    }
 }

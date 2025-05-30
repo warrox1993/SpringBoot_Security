@@ -1,7 +1,7 @@
 package com.example.Decouverte_Spring_boot.api.controller;
 
+import com.example.Decouverte_Spring_boot.bll.service.UserService;
 import com.example.Decouverte_Spring_boot.dal.domain.entities.User;
-import com.example.Decouverte_Spring_boot.dal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,20 +9,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller pour la gestion des utilisateurs avec CRUD complet :
+ * Version améliorée du UserController utilisant le service
+ * au lieu d'accéder directement au repository.
  *
- *  create : http://localhost:8080/user/
- *  read all : http://localhost:8080/user/
- *  read one : http://localhost:8080/user/{id}
- *  update : http://localhost:8080/user/{id}
- *  delete : http://localhost:8080/user/{id}
+ * Cette approche respecte mieux l'architecture en couches :
+ * Controller -> Service -> Repository
  */
 @RestController
 @RequestMapping("user")
 @RequiredArgsConstructor
-public class UserController {
+public class UserControllerWithService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
      * Récupère tous les utilisateurs
@@ -30,7 +28,7 @@ public class UserController {
      */
     @GetMapping
     public List<User> all() {
-        return userRepository.findAll();
+        return userService.findAll();
     }
 
     /**
@@ -39,7 +37,7 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<User> getOne(@PathVariable Long id) {
-        return userRepository.findById(id)
+        return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -50,9 +48,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.ok(
-                userRepository.save(user)  // enregistre en db
-        );
+        return ResponseEntity.ok(userService.save(user));
     }
 
     /**
@@ -60,14 +56,10 @@ public class UserController {
      * PUT http://localhost:8080/user/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User nouvelUser) {
-        return userRepository.findById(id)
-                .map((userActuel) -> {
-                    userActuel.setNom(nouvelUser.getNom());
-                    userActuel.setEmail(nouvelUser.getEmail());
-                    userActuel.setAge(nouvelUser.getAge());
-                    return ResponseEntity.ok(userRepository.save(userActuel));
-                }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
+        return userService.update(id, user)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -76,10 +68,20 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+        if (userService.deleteById(id)) {
+            return ResponseEntity.noContent().build();
         }
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Recherche un utilisateur par email
+     * GET http://localhost:8080/user/email/{email}
+     */
+    @GetMapping("/email/{email}")
+    public ResponseEntity<User> findByEmail(@PathVariable String email) {
+        return userService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
