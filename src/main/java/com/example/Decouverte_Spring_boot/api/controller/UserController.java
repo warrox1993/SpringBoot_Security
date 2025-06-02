@@ -8,15 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller pour la gestion des utilisateurs avec CRUD complet :
- *
- *  create : http://localhost:8080/user/
- *  read all : http://localhost:8080/user/
- *  read one : http://localhost:8080/user/{id}
- *  update : http://localhost:8080/user/{id}
- *  delete : http://localhost:8080/user/{id}
- */
 @RestController
 @RequestMapping("user")
 @RequiredArgsConstructor
@@ -24,62 +15,40 @@ public class UserController {
 
     private final UserRepository userRepository;
 
-    /**
-     * Récupère tous les utilisateurs
-     * GET http://localhost:8080/user/
-     */
     @GetMapping
-    public List<User> all() {
+    public List<User> getAllUser(){
         return userRepository.findAll();
     }
 
-    /**
-     * Récupère un utilisateur par son ID
-     * GET http://localhost:8080/user/{id}
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<User> getOne(@PathVariable Long id) {
+    public ResponseEntity<User> getOne(@PathVariable long id) {
         return userRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok) // Retourne 200 OK si trouvé
+                .orElseGet(() -> ResponseEntity.notFound().build()); // Retourne 404 si non trouvé
     }
-
-    /**
-     * Crée un nouvel utilisateur
-     * POST http://localhost:8080/user/
-     */
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
+    public ResponseEntity<User> create(@RequestBody User u) {
         return ResponseEntity.ok(
-                userRepository.save(user)  // enregistre en db
+                userRepository.save(u)  // enregistre en db
         );
     }
 
-    /**
-     * Met à jour un utilisateur existant
-     * PUT http://localhost:8080/user/{id}
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User nouvelUser) {
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User nouveauUser) {
         return userRepository.findById(id)
-                .map((userActuel) -> {
-                    userActuel.setNom(nouvelUser.getNom());
-                    userActuel.setEmail(nouvelUser.getEmail());
-                    userActuel.setAge(nouvelUser.getAge());
-                    return ResponseEntity.ok(userRepository.save(userActuel));
-                }).orElse(ResponseEntity.notFound().build());
+                .map( (userActuel) -> {
+                    userActuel.setNom( nouveauUser.getNom() );
+                    return ResponseEntity.ok( userRepository.save( userActuel) );
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Supprime un utilisateur
-     * DELETE http://localhost:8080/user/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return ResponseEntity.ok().build();
         }
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
     }
 }

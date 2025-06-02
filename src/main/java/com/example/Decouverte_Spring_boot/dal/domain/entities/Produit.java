@@ -19,6 +19,9 @@ public class Produit {
     @Column(name="prix")
     private Double prix;
 
+    @Column
+    private boolean isPromote = false;
+
 
     /**
      * Le constructeur vide est le constructeur par défaut REQUIS par JPA.

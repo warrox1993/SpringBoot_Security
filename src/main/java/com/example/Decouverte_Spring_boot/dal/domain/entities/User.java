@@ -7,6 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 @AllArgsConstructor
 @Table(name="user_")
 public class User {
@@ -15,26 +16,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="nom")
     private String nom;
-
-    @Column(name="email")
     private String email;
+    private String mdp;
 
-    @Column(name="age")
-    private Integer age;
-
-    /**
-     * Le constructeur vide est le constructeur par défaut REQUIS par JPA.
-     */
-    public User() {}
-
-    /**
-     * Notre constructeur pratique
-     */
-    public User(String nom, String email, Integer age) {
-        this.nom = nom;
-        this.email = email;
-        this.age = age;
-    }
 }
