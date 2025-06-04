@@ -1,11 +1,17 @@
-### PUT - Product update
-POST http://localhost:8080/api/products/1
+### POST - user login
+POST http://localhost:8080/api/login
 Content-Type: application/json
 
 {
-  "name": "Biblop",
-  "isPromote": true
+  "email": "admin@bstorm.be",
+  "password": "Test1234="
 }
 
-### GET - Product getAll
-GET http://localhost:8080/api/products
+### POST - user register
+POST http://localhost:8080/api/register
+Content-Type: application/json
+
+{
+  "email": "demo@bstorm.be",
+  "password": "Test1234="
+}

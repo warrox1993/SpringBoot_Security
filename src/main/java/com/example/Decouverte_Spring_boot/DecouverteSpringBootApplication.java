@@ -1,84 +1,60 @@
 package com.example.Decouverte_Spring_boot;
 
+import com.example.Decouverte_Spring_boot.dal.entities.security.RoleEntity;
+import com.example.Decouverte_Spring_boot.dal.entities.security.UserEntity;
+import com.example.Decouverte_Spring_boot.dal.repositories.security.RoleRepository;
+import com.example.Decouverte_Spring_boot.dal.repositories.security.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-//TODO : PARLER DU DI dans l'IOC.
-/**
- * @SpringBootApplication :
- * Définition : annotation (qui contient des métadonnées qu'on place sur une classe) qui regroupe
- * 3 comportements différents.
- * <br>
- * 1)@Configuration : Ceci va contenir les définitions de ce qu'on appelle un beans.
- * 	<br>-> Un bean : c'est une fonction créant des objets qui sont gérés par Spring.
- * <br><br>
- * 2)@EnableAutoConfiguration : Spring boot qui va automatiquement configurer de nombreux composants pour vous.
- * <br> Notamment, le serveur web embarqué : TomCat, le devTools) tout ce que vous avez globalement spécifié
- * dans vos dépendances.
- * <br><br>
- * 3)@ComponentScan : Grâce à cet annotation, je spécifie à Spring qu'il doit scanner nos package
- * (ici : com.example.Decouverte_Spring_boot) et tous ses sous-packages pour y détecter les classes
- * qu'il doit instancier dans son contexte.
- */
+import java.util.List;
+
 @SpringBootApplication
+@RequiredArgsConstructor
+@Slf4j
 public class DecouverteSpringBootApplication {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-	public static void main(String[] args) {
-		SpringApplication.run(DecouverteSpringBootApplication.class, args);
-	}
+    public static void main(String[] args) {
+        ConfigurableApplicationContext app = SpringApplication.run(DecouverteSpringBootApplication.class, args);
 
+    }
+
+
+    @Profile("dev")
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        log.info("Application ready");
+
+        List<RoleEntity> authorities = List.of(
+                new RoleEntity("ADMIN"),
+                new RoleEntity("USER")
+        );
+
+        this.roleRepository.saveAll(authorities);
+
+        List<RoleEntity> roles = this.roleRepository.findAll();
+        RoleEntity userRole = roles.stream().filter(r -> r.getName().equals("USER")).findFirst().orElseThrow();
+
+        UserEntity admin = new UserEntity();
+        admin.setEmail("admin@bstorm.be");
+        admin.setPassword(passwordEncoder.encode("Test1234="));
+        admin.setAuthorities(roles);
+
+        UserEntity user = new UserEntity();
+        user.setEmail("user@bstorm.be");
+        user.setPassword(passwordEncoder.encode("Test1234="));
+        user.setAuthorities(List.of(userRole));
+        this.userRepository.save(admin);
+        this.userRepository.save(user);
+    }
 }
-
-
-/** Principe de L'ioc expliquant la présence de ce fameux componentScan.
- *
- * L'ioc ou Inversion of controls :
- *
- * Flashback : L'opérateur d'instanciation : le new.
- *
- * Lorsque je développe en orienté objet en java par exemple, lorsque je veux créer un objet, je dois utiliser
- * l'opérateur d'instanciation new.
- *
- * En fait ,l'ioc, c'est le principe de retirer cette mission au développeur.
- * EN GROS, quand j'applique le design pattern de l'ioc, je ne fais plus de new. Je n'instancie plus moi-même les
- * objets.
- *
- * C'est le système qui est chargé de le faire.
- *
- * Comment est-ce que j'indique à Spring ce qu'il doit instancier dans son contexte. (les objets dont spring à besoin).
- *
- * 	1. via une interface
- * 	//public class Person implements toInstanciate {
- * //    private Long id;
- * //}
- * //
- * //
- * //
- * //=> ah ! trop bien une interface m'indiquant que je dois instancier l'objet
- * //
- * //    => new Person()
- *
- * 	2. via une annotation :
- * 	Même principe sauf qu'au lieu de vérifier s'il y a une interface d'implémenter sur une classe, on regarde
- * 	si une annotation y est attachée.
- * @ToInstanciate
- * //public class Person {
- *  * //    private Long id;
- *  * //}
- *  * //
- *  * //
- *  * //
- *  * //=> ah ! trop bien une annotation m'indiquant que je dois instancier l'objet
- *  * //
- *  * //    => new Person()
- */
-
-/** Exemple d'annotation permettant d'instancier des éléments dans le contexte de spring :
- *
- * @Entity
- * @Service
- * @Repository
- * @RestController
- * @Configuration
- *
- */

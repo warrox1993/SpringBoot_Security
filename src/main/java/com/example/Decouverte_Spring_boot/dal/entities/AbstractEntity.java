@@ -1,6 +1,5 @@
 package com.example.Decouverte_Spring_boot.dal.entities;
 
-import com.example.Decouverte_Spring_boot.dal.listeners.CreatedAt;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
@@ -21,7 +20,6 @@ public abstract class AbstractEntity {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @CreatedAt
     private LocalDateTime creationDate;
     private LocalDateTime lastUpdateDate;
     private boolean active = true;
